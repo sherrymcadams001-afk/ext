@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State of Oregon - DAS Invoice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            line-height: 1.3;
+            color: #000;
+            background: #fff;
+        }
+
+        .invoice-page {
+            width: 8.5in;
+            /* Removed fixed min-height to allow natural shrink for single-page print */
+            margin: 0 auto;
+            /* Further reduced top padding to tighten space above seal */
+            padding: 0.4in 1in 0.7in 1in; /* slightly reduced bottom padding */
+            background: #fff;
+        }
+
+        /* Header Section */
+        .header-block {
+            margin-bottom: 18px;
+        }
+
+        .seal-placeholder {
+            width: 1in;
+            height: 1in;
+            border: 1.5pt solid #000;
+            margin-bottom: 8px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Ensure image stays within border */
+        }
+
+        .seal-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .agency-header {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            margin-bottom: 2px;
+        }
+
+        .agency-name {
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 1px;
+        }
+
+        .header-separator {
+            border: none;
+            border-top: 1.5pt solid #000;
+            margin: 14px 0 16px 0;
+        }
+
+        /* Invoice Title */
+        .invoice-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 12px 0 18px 0;
+            letter-spacing: 1px;
+        }
+
+        /* Metadata Section */
+        .metadata-section {
+            margin-bottom: 20px;
+            font-size: 10.5pt;
+        }
+
+        .metadata-row {
+            margin-bottom: 5px;
+            margin-left: 2px;
+        }
+
+        .metadata-label {
+            display: inline-block;
+            width: 115px;
+            font-weight: normal;
+        }
+
+        .metadata-value {
+            display: inline;
+            font-weight: normal;
+        }
+
+        /* Remit To Section */
+        .remit-section {
+            margin-bottom: 22px;
+            padding: 10px 12px;
+            border: 1pt solid #000;
+            background: #fff;
+        }
+
+        .remit-header {
+            font-weight: bold;
+            font-size: 10.5pt;
+            margin-bottom: 8px;
+        }
+
+        .remit-line {
+            font-size: 10pt;
+            margin-bottom: 3px;
+        }
+
+        .vendor-code {
+            margin-top: 6px;
+            font-size: 10pt;
+        }
+
+        /* Invoice Table */
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 22px;
+            font-size: 10pt;
+        }
+
+        .invoice-table th {
+            border: 1pt solid #000;
+            padding: 7px 8px;
+            text-align: left;
+            font-weight: bold;
+            background: #fff;
+        }
+
+        .invoice-table th.align-right {
+            text-align: right;
+        }
+
+        .invoice-table td {
+            border: 1pt solid #000;
+            padding: 7px 8px;
+            vertical-align: top;
+        }
+
+        .invoice-table td.align-right {
+            text-align: right;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .invoice-table td.align-center {
+            text-align: center;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            padding-top: 9px;
+            padding-bottom: 9px;
+        }
+
+        .blank-row td {
+            border-left: 1pt solid #000;
+            border-right: 1pt solid #000;
+            border-top: none;
+            border-bottom: none;
+            padding: 4px 8px;
+        }
+
+        /* Payment Instructions */
+        .payment-section {
+            margin-bottom: 16px; /* reduced to reclaim space */
+            padding: 12px;
+            border: 1pt solid #000;
+            background: #fff;
+        }
+
+        .payment-header {
+            font-weight: bold;
+            font-size: 10.5pt;
+            margin-bottom: 8px;
+        }
+
+        .payment-notice {
+            font-size: 10pt;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .bank-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin-bottom: 10px;
+        }
+
+        .bank-info-table td {
+            padding: 4px 8px;
+            border: none;
+        }
+
+        .bank-info-label {
+            width: 200px;
+            font-weight: normal;
+        }
+
+        .bank-info-value {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .payment-warning {
+            font-size: 9.5pt;
+            font-weight: bold;
+            margin-top: 8px;
+            padding: 6px 8px;
+            border-left: 3pt solid #000;
+        }
+
+        /* Footer */
+        .footer-section {
+            margin-top: 18px; /* reduced to keep footer on page 1 */
+            font-size: 8pt;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        .footer-terms {
+            margin-bottom: 4px;
+        }
+
+        .footer-notice {
+            margin-top: 12px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Print Button */
+        .print-button-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 16px;
+            background: #f0f0f0;
+        }
+
+        .print-button {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            font-size: 11pt;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .print-button:hover {
+            background: #333;
+        }
+
+        /* Print Styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .invoice-page {
+                width: 100%;
+                margin: 0;
+                /* Further tightened padding to reclaim space */
+                padding: 0.3in 0.6in 0.4in 0.6in;
+                min-height: unset !important;
+                height: auto !important;
+            }
+            /* Allow breaks inside earlier sections so footer isn't pushed alone to page 2 */
+            .invoice-table, .payment-section, .metadata-section, .remit-section {
+                page-break-inside: auto;
+                break-inside: auto;
+            }
+            .footer-section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                page-break-after: avoid;
+            }
+            /* Compress vertical spacing for print */
+            .invoice-table th, .invoice-table td { padding: 5px 6px; }
+            .payment-section { margin-bottom: 10px; padding: 10px; }
+            .footer-section { margin-top: 10px; }
+            .header-block { margin-bottom: 14px; }
+            .invoice-title { margin: 10px 0 14px 0; }
+            /* Remove blank spacer row */
+            .blank-row { display: none !important; }
+
+            @page {
+                size: letter;
+                margin: 0;
+            }
+
+            * {
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Button -->
+    <div class="print-button-container no-print">
+        <button class="print-button" onclick="window.print()">Print Invoice / Save as PDF</button>
+    </div>
+
+    <div class="invoice-page">
+        <!-- Header -->
+        <div class="header-block">
+            <div class="seal-placeholder">
+                <img src="https://i.postimg.cc/5yDv13XB/orseal.png" alt="Oregon State Seal" loading="lazy">
+            </div>
+            <div class="agency-header">
+                <div class="agency-name">STATE OF OREGON</div>
+                <div>Department of Administrative Services</div>
+                <div>Statewide Financial Services</div>
+                <div>155 Cottage Street NE</div>
+                <div>Salem, Oregon 97301-3969</div>
+            </div>
+        </div>
+
+        <hr class="header-separator">
+
+        <!-- Invoice Title -->
+        <div class="invoice-title">INVOICE</div>
+
+        <!-- Metadata -->
+        <div class="metadata-section">
+            <div class="metadata-row">
+                <span class="metadata-label">Invoice No:</span>
+                <span class="metadata-value" id="invoiceNumber">DAS-2025-004721</span>
+            </div>
+            <div class="metadata-row">
+                <span class="metadata-label">Date Issued:</span>
+                <span class="metadata-value" id="dateIssued">10/30/2025</span>
+            </div>
+            <div class="metadata-row">
+                <span class="metadata-label">Payment Due:</span>
+                <span class="metadata-value" id="paymentDue">11/29/2025</span>
+            </div>
+            <div class="metadata-row">
+                <span class="metadata-label">Fiscal Year:</span>
+                <span class="metadata-value">FY 2025-26</span>
+            </div>
+        </div>
+
+        <!-- Remit To -->
+        <div class="remit-section">
+            <div class="remit-header">REMIT TO:</div>
+            <div class="remit-line">TVW INC.</div>
+            <div class="remit-line">5605 NE Elam Young Pkwy</div>
+            <div class="remit-line">Hillsboro, OR 97124</div>
+        </div>
+
+        <!-- Invoice Table -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 60%;">Item Description</th>
+                    <th class="align-center" style="width: 10%;">Qty</th>
+                    <th class="align-right" style="width: 30%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Administrative Reconciliation - CUI Compliance Status</td>
+                    <td class="align-center">1</td>
+                    <td class="align-right">$2,400.00</td>
+                </tr>
+                <tr>
+                    <td>Processing Fee - Expedited Records Update</td>
+                    <td class="align-center">1</td>
+                    <td class="align-right">$75.00</td>
+                </tr>
+                <tr class="blank-row">
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="2">TOTAL DUE</td>
+                    <td class="align-right">$2,475.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Payment Instructions -->
+        <div class="payment-section">
+            <div class="payment-header">PAYMENT INSTRUCTIONS</div>
+            <div class="payment-notice">
+                This invoice requires ACH electronic payment. Wire transfers and checks are not accepted.
+            </div>
+            <table class="bank-info-table">
+                <tr>
+                    <td class="bank-info-label">Financial Institution:</td>
+                    <td class="bank-info-value">Wells Fargo Bank, N.A.</td>
+                </tr>
+                <tr>
+                    <td class="bank-info-label">ABA Routing Number:</td>
+                    <td class="bank-info-value">121042882</td>
+                </tr>
+                <tr>
+                    <td class="bank-info-label">Account Number:</td>
+                    <td class="bank-info-value">6734652297</td>
+                </tr>
+                <tr>
+                    <td class="bank-info-label">Account Name:</td>
+                    <td class="bank-info-value">Oregon Department of Administrative Services</td>
+                </tr>
+                <tr>
+                    <td class="bank-info-label">Payment Reference Field:</td>
+                    <td class="bank-info-value" id="paymentReference">DAS-2025-004721</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-section">
+            <div class="footer-terms">Payment terms: Net 30 days from invoice date</div>
+            <div class="footer-terms">Authority: ORS 293.462 | OAR 125-246-0300</div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Auto-generate invoice data on page load
+         */
+        function formatDate(date) {
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${month}/${day}/${year}`;
+        }
+
+        function generateInvoiceNumber() {
+            const year = new Date().getFullYear();
+            const sequential = Math.floor(Math.random() * 900000 + 100000);
+            return `DAS-${year}-${sequential}`;
+        }
+
+        function calculateDueDate(issueDate) {
+            const due = new Date(issueDate);
+            due.setDate(due.getDate() + 30);
+            return due;
+        }
+
+        function initializeInvoice() {
+            const issueDate = new Date();
+            const dueDate = calculateDueDate(issueDate);
+            const invoiceNum = generateInvoiceNumber();
+
+            document.getElementById('invoiceNumber').textContent = invoiceNum;
+            document.getElementById('dateIssued').textContent = formatDate(issueDate);
+            document.getElementById('paymentDue').textContent = formatDate(dueDate);
+            document.getElementById('paymentReference').textContent = invoiceNum;
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeInvoice);
+        } else {
+            initializeInvoice();
+        }
+
+        // Keyboard shortcut for print
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>

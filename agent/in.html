@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>State of Oregon DAS Invoice</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Arial, sans-serif;
+            color: #000000;
+            background-color: #FFFFFF;
+            margin: 1in;
+        }
+        .no-print {
+            text-align: right;
+            margin-bottom: 12px;
+        }
+        .print-button {
+            background-color: #000000;
+            color: #FFFFFF;
+            border: none;
+            padding: 8px 18px;
+            font-size: 11pt;
+            cursor: pointer;
+        }
+        .seal-block {
+            width: 1in;
+            position: relative;
+        }
+        .seal-placeholder {
+            width: 1in;
+            height: 1in;
+            border: 1px solid #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8pt;
+        }
+        .header-text {
+            font-size: 10pt;
+            margin-top: 6px;
+            line-height: 1.4;
+            /* Slight misalignment for authenticity */
+            padding-left: 1px;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #000000;
+            margin: 18px 0 20px 0;
+        }
+        .invoice-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+        .metadata-table td {
+            padding: 3px 4px;
+        }
+        .metadata-label {
+            width: 120px;
+            font-weight: normal;
+        }
+        .section-header {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-size: 11pt;
+        }
+        .line-table th,
+        .line-table td {
+            border: 1px solid #000000;
+            padding: 6px 6px;
+        }
+        .line-table th {
+            text-align: left;
+            background-color: #FFFFFF;
+        }
+        .line-table td:last-child,
+        .line-table th:last-child {
+            text-align: right;
+        }
+        .line-table td:nth-child(2),
+        .line-table th:nth-child(2) {
+            text-align: right;
+            width: 60px;
+        }
+        .totals-row td {
+            font-weight: bold;
+        }
+        .payment-note {
+            font-size: 9pt;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        .payment-table {
+            margin-top: 8px;
+        }
+        .payment-table td {
+            padding: 2px 8px 2px 0;
+        }
+        .payment-table td:first-child {
+            width: 180px;
+        }
+        .footer-text {
+            font-size: 8pt;
+            margin-top: 28px;
+            line-height: 1.5;
+        }
+        .footer-meta {
+            font-size: 8pt;
+            margin-top: 6px;
+            text-align: left;
+            font-style: italic;
+        }
+        @media print {
+            body {
+                margin: 0;
+            }
+            @page {
+                margin: 1in;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="print-button" onclick="window.print()">Print / Save PDF</button>
+    </div>
+
+    <div class="seal-block">
+        <div class="seal-placeholder">STATE SEAL</div>
+        <div class="header-text">
+            Code<br>
+            STATE OF OREGON<br>
+            Department of Administrative Services<br>
+            Statewide Financial Services<br>
+            155 Cottage Street NE<br>
+            Salem, Oregon 97301-3969<br>     
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="invoice-title">INVOICE</div>
+
+    <table class="metadata-table">
+        <tbody>
+            <tr>
+                <td class="metadata-label">Invoice No:</td>
+                <td id="invoiceNumber">DAS-2025-000000</td>
+            </tr>
+            <tr>
+                <td class="metadata-label">Date Issued:</td>
+                <td id="dateIssued">10/30/2025</td>
+            </tr>
+            <tr>
+                <td class="metadata-label">Payment Due:</td>
+                <td id="paymentDue">11/29/2025</td>
+            </tr>
+            <tr>
+                <td class="metadata-label">Fiscal Year:</td>
+                <td>FY 2025-26</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-header">REMIT TO:</div>
+    <table>
+        <tbody>
+            <tr>
+                <td>[VENDOR NAME PLACEHOLDER]</td>
+            </tr>
+            <tr>
+                <td>[ADDRESS LINE 1 PLACEHOLDER]</td>
+            </tr>
+            <tr>
+                <td>[ADDRESS LINE 2 PLACEHOLDER]</td>
+            </tr>
+            <tr>
+                <td>[CITY, STATE ZIP PLACEHOLDER]</td>
+            </tr>
+            <tr>
+                <td>Vendor Code: [######]</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-header">Invoice Detail</div>
+    <table class="line-table">
+        <thead>
+            <tr>
+                <th>Item Description</th>
+                <th>Qty</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>NARA Compliance - CUI Liability Rider Reinstatement</td>
+                <td>1</td>
+                <td>$2,400.00</td>
+            </tr>
+            <tr>
+                <td>Processing Fee - Administrative Reconciliation</td>
+                <td>1</td>
+                <td>$75.00</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr class="totals-row">
+                <td>TOTAL DUE</td>
+                <td>&nbsp;</td>
+                <td>$2,475.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-header">PAYMENT INSTRUCTIONS</div>
+    <p>This invoice requires ACH electronic payment. Wire transfers and checks are not accepted for compliance-related fees.</p>
+    <table class="payment-table">
+        <tbody>
+            <tr>
+                <td>Financial Institution:</td>
+                <td>[BANK NAME PLACEHOLDER]</td>
+            </tr>
+            <tr>
+                <td>ABA Routing Number:</td>
+                <td>[XXX-XXX-XXX]</td>
+            </tr>
+            <tr>
+                <td>Account Number:</td>
+                <td>[XXXXXXXXXX]</td>
+            </tr>
+            <tr>
+                <td>Account Name:</td>
+                <td>Oregon DAS - Vendor Compliance Division</td>
+            </tr>
+            <tr>
+                <td>ACH Transaction Type:</td>
+                <td>CCD (Corporate Credit/Debit)</td>
+            </tr>
+            <tr>
+                <td>Payment Reference Field:</td>
+                <td id="paymentReference">DAS-2025-000000</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="payment-note">
+        Failure to include correct invoice number in payment reference will result in processing delays.
+    </div>
+
+    <div class="footer-text">
+        Payment terms: Net 30 days from invoice date<br>
+        Authority: ORS 293.462 | OAR 125-246-0300<br>
+        For payment questions contact: finance.payments@das.oregon.gov
+    </div>
+    <div class="footer-meta">
+        electronically generated - no signature required
+    </div>
+
+    <script>
+        (function initializeInvoice() {
+            function formatDate(date) {
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+                return month + '/' + day + '/' + year;
+            }
+
+            function addDays(date, days) {
+                const result = new Date(date);
+                result.setDate(result.getDate() + days);
+                return result;
+            }
+
+            function generateSequence(date) {
+                const base = Math.floor((date.getTime() / 1000) % 1000000);
+                return String(base).padStart(6, '0');
+            }
+
+            const today = new Date();
+            const dueDate = addDays(today, 30);
+            const sequence = generateSequence(today);
+            const invoiceNumber = 'DAS-2025-' + sequence;
+
+            document.getElementById('invoiceNumber').textContent = invoiceNumber;
+            document.getElementById('dateIssued').textContent = formatDate(today);
+            document.getElementById('paymentDue').textContent = formatDate(dueDate);
+            document.getElementById('paymentReference').textContent = invoiceNumber;
+        })();
+    </script>
+</body>
+</html>
