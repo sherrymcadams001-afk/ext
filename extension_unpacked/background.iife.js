@@ -1,8 +1,5 @@
-// Static bootstrap import for MV3 service worker (dynamic import is disallowed).
-// Import bootstrapAgent directly so action click handler can invoke it without dynamic import.
-import { bootstrapAgent } from "./agent/index.js";
-// JS autonomous agent bootstrap (new in-port implementation)
-import "./agent_js/bootstrap.js";
+// Unified agent bootstrap - combines best of both legacy architectures
+import { bootstrapAgent } from "./agent_unified/bootstrap.js";
 // Defensive shim for chrome.sidePanel API (MV3 Canary / experimental).
 try {
   if (typeof chrome !== "undefined" && (!chrome.sidePanel || typeof chrome.sidePanel.setPanelBehavior !== "function")) {
