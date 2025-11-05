@@ -8,9 +8,11 @@ Copilot transforms browser interactions through autonomous agents that understan
 
 ### Key Features
 
-- **Intelligent Agent System**: Dual-agent architecture (Planner + Navigator) for strategic task decomposition and precise execution
+- **Unified Agent System**: Single, cohesive autonomous agent combining alarm-based scheduling with RAG-enhanced planning
 - **Multi-Provider LLM Support**: OpenAI, Anthropic, DeepSeek, Gemini, Grok, Ollama, Azure OpenAI, OpenRouter, Groq, Cerebras, Llama
-- **RAG-Enhanced Context**: Vector-based semantic search for relevant historical context
+- **RAG-Enhanced Context**: Vector-based semantic search with chrome.storage persistence for relevant historical context
+- **Persistent State Management**: Goals, execution history, and RAG index survive extension restarts
+- **Rich Browser Automation**: 7 built-in tools (navigate, click, type, extractText, scroll, note, complete)
 - **Content Bridge**: Secure DOM manipulation via message-based tool execution
 - **Enterprise UI/UX**: WCAG AA compliant, calm color palette, mathematical spacing system
 - **Firewall Protection**: Allow/deny list for domain-level access control
@@ -112,25 +114,46 @@ Copilot transforms browser interactions through autonomous agents that understan
 
 ## Architecture
 
-### Agent System
+### Unified Agent System
+
+The extension uses a **Hexagonal/Ports & Adapters** architecture for clean separation of concerns:
 
 ```
-User Goal → Planner Agent (strategic decomposition)
+┌─────────────────────────────────────┐
+│     Agent Core (state + loop)      │
+├─────────────────────────────────────┤
+│  Ports: IProvider, ITool, IStorage │
+└─────────────────────────────────────┘
+           ↓              ↓         ↓
+    ┌────────┐    ┌────────┐  ┌──────┐
+    │Provider│    │  Tool  │  │ RAG  │
+    │Adapter │    │Adapter │  │Index │
+    └────────┘    └────────┘  └──────┘
+```
+
+**Execution Flow:**
+
+```
+User Goal → State Manager (enqueue to chrome.storage)
           ↓
-          Planning Loop (RAG context injection)
+          Alarm-based Loop (reliable scheduling)
           ↓
-          Navigator Agent (action execution)
+          RAG Query (retrieve relevant context)
+          ↓
+          Provider Router (planner LLM)
           ↓
           Tool Registry (navigate, click, type, extract, scroll)
           ↓
           Content Bridge (secure DOM manipulation)
           ↓
-          Result → Planner (next iteration)
+          State Update (record result, persist)
+          ↓
+          Next Iteration or Complete
 ```
 
 ### Component Structure
 
-- **Background Service Worker**: Agent loop orchestration, LLM client, RAG index
+- **Background Service Worker**: Unified agent bootstrap, alarm-based scheduling
 - **Content Script**: DOM tool execution, page event monitoring
 - **Side Panel**: Chat interface, history management
 - **Options Page**: Settings, provider configuration, firewall rules
@@ -138,20 +161,25 @@ User Goal → Planner Agent (strategic decomposition)
 ### File Organization
 
 ```
-/agent_js/          # New JS autonomous agent runtime
-  bootstrap.js      # Entry point, message handlers
-  agentLoop.js      # Main planning/execution cycle
-  llmClient.js      # Multi-provider LLM wrapper
-  messages.js       # Conversation schema & trimming
-  ragIndex.js       # Vector-based semantic context
-  state.js          # Persistent agent state
-  tools.js          # Browser action registry
-
-/agent/             # Legacy Python-based agent (deprecated)
-/content/           # Content script bundle
-/side-panel/        # React-based chat UI (precompiled)
-/options/           # React-based settings UI (precompiled)
-/design-system/     # Token definitions, component patterns
+/extension_unpacked/
+  agent_unified/       # Unified agent system (v0.2.0+)
+    core/              # Core state & loop
+      interfaces.js    # TypeScript-style type definitions
+      state.js         # Persistent state (chrome.storage)
+      loop.js          # Alarm-based scheduling
+    adapters/          # External integrations
+      providerRouter.js # Multi-LLM provider routing
+      toolRegistry.js   # Browser automation tools
+      ragIndex.js       # RAG with persistence
+    bootstrap.js       # Single entry point
+    README.md          # Architecture documentation
+  
+  agent/               # Legacy agent (deprecated, will be removed)
+  agent_js/            # Legacy JS agent (deprecated, will be removed)
+  content/             # Content script bundle
+  side-panel/          # React-based chat UI (precompiled)
+  options/             # React-based settings UI (precompiled)
+  design-system/       # Token definitions, component patterns
 ```
 
 ## Development
@@ -175,33 +203,63 @@ All UI components follow the [Design System](./DESIGN_SYSTEM.md) specification:
 
 ### Loading (No Build Step Required)
 
-This extension loads directly from the repository root. A separate Python build script is no longer used.
+This extension loads directly from the `extension_unpacked/` directory.
 
 Steps:
 1. Open `chrome://extensions` and enable Developer Mode.
-2. Click "Load unpacked" and select the repository root folder (e.g. `nanobrowser/`).
-3. Chrome will register the MV3 service worker `background.iife.js` which imports runtime modules from `agent_js/` and `agent/`.
+2. Click "Load unpacked" and select the `extension_unpacked/` folder.
+3. Chrome will register the MV3 service worker `background.iife.js` which imports the unified agent from `agent_unified/`.
 
 If Chrome reports a service worker registration failure:
-* Ensure the folder you loaded contains `background.iife.js` AND the `agent_js/` + `agent/` directories.
-* Verify no stale `extension_unpacked/` directory is selected—choose the source root.
-* Check the service worker console for a specific missing file 404.
+* Ensure the folder you loaded is `extension_unpacked/` and contains `background.iife.js`
+* Verify the `agent_unified/` directory exists
+* Check the service worker console for specific missing file errors
 
-### Testing Agent Runtime
+### Testing Unified Agent
 
 ```javascript
-// In service worker console
+// In service worker console (chrome://extensions → Service Worker: Inspect views)
+
+// Queue a goal
 chrome.runtime.sendMessage({
-  kind: "jsAgent.enqueueGoal",
-  goal: "Navigate to example.com and extract page title"
+  type: "agent.queueGoal",
+  payload: "Navigate to example.com and extract page title"
+}, console.log);
+
+// Get agent state
+chrome.runtime.sendMessage({
+  type: "agent.getState"
 }, console.log);
 
 // List available tools
-chrome.runtime.sendMessage({ kind: "jsAgent.listTools" }, console.log);
+chrome.runtime.sendMessage({
+  type: "agent.listTools"
+}, console.log);
 
-// Get agent state snapshot
-chrome.runtime.sendMessage({ kind: "jsAgent.snapshot" }, console.log);
+// List available providers
+chrome.runtime.sendMessage({
+  type: "agent.listProviders"
+}, console.log);
+
+// Get RAG statistics
+chrome.runtime.sendMessage({
+  type: "agent.getRAGStats"
+}, console.log);
 ```
+
+### Migration from Legacy APIs
+
+If you're using the old agent APIs, they're still supported for backward compatibility:
+
+| Legacy API | Unified API | Notes |
+|------------|-------------|-------|
+| `agent.queueGoal` | `agent.queueGoal` | No change |
+| `agent.getState` | `agent.getState` | No change |
+| `jsAgent.enqueueGoal` | `agent.queueGoal` | Use new unified API |
+| `jsAgent.snapshot` | `agent.getState` | Use new unified API |
+| `jsAgent.listTools` | `agent.listTools` | Use new unified API |
+
+The legacy `agent/` and `agent_js/` directories are deprecated and will be removed in v0.3.0.
 
 ## Accessibility
 
