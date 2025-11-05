@@ -181,16 +181,22 @@ export const createAgentState = ({ storageArea = "local", logger } = {}) => {
 
     try {
       const snapshot = clone(internalState);
-      chrome.runtime.sendMessage({
+      const sendResult = chrome.runtime.sendMessage({
         type: "agent.stateUpdate",
         payload: {
           reason,
           snapshot,
         },
-      }).catch(() => {
-        // Ignore broadcast errors (no listeners)
       });
+      
+      // Handle promise if sendMessage returns one
+      if (sendResult && typeof sendResult.catch === 'function') {
+        sendResult.catch(() => {
+          // Ignore broadcast errors (no listeners)
+        });
+      }
     } catch (error) {
+      // Silently ignore broadcast errors in non-extension contexts
       logger?.warn?.("Failed to broadcast state update", { error: error.message });
     }
   };
