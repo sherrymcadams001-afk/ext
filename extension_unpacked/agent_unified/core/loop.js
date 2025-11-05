@@ -15,9 +15,10 @@ const DEFAULT_CONFIG = {
 };
 
 /**
- * Add random jitter to delay to prevent thundering herd
+ * Add proportional random jitter to delay to prevent thundering herd
+ * Jitter is 10% of delay, capped at 1 second
  */
-const jitter = (ms) => ms + Math.random() * 1000;
+const jitter = (ms) => ms + Math.random() * Math.min(ms * 0.1, 1000);
 
 /**
  * Build system prompt for planner

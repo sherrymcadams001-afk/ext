@@ -174,8 +174,9 @@ export const createProviderRouter = ({ storageArea = "local", logger } = {}) => 
   adapters.set("mock", createMockAdapter({ logger }));
 
   // Dynamically import and register OpenAI adapter if available
-  // TODO: Move OpenAI adapter to agent_unified/adapters/ in v0.3.0
-  // Currently using legacy adapter for backward compatibility
+  // TODO(v0.3.0): Move OpenAI adapter to agent_unified/adapters/openai.js
+  // Currently using legacy adapter from /agent/providers/openai.js for backward compatibility
+  // Migration will include moving the adapter and updating all import paths
   const lazyLoadOpenAI = async () => {
     try {
       const { createOpenAIAdapter } = await import("../../agent/providers/openai.js");

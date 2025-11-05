@@ -68,6 +68,22 @@ async function storageSet(area, items) {
 }
 
 /**
+ * Generate UUID (fallback for environments without crypto.randomUUID)
+ */
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  
+  // Fallback UUID v4 implementation
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+/**
  * Clone helper
  */
 const clone = (value) => {
@@ -217,7 +233,7 @@ export const createAgentState = ({ storageArea = "local", logger } = {}) => {
     await init();
     const normalized = normalizeGoalInput(payload);
     const goal = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       status: "queued",
       steps: [],
       createdAt: Date.now(),
