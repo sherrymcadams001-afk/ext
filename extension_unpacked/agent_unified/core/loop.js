@@ -14,7 +14,9 @@ const DEFAULT_CONFIG = {
   ragContextSize: 5,
 };
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * Add random jitter to delay to prevent thundering herd
+ */
 const jitter = (ms) => ms + Math.random() * 1000;
 
 /**
@@ -181,7 +183,8 @@ export class AgentLoop {
         goalId: goal.id, 
         error: error.message 
       });
-      await sleep(jitter(this.config.failureBackoffMs));
+      // Schedule next attempt with backoff and jitter
+      await this.scheduleNext(jitter(this.config.failureBackoffMs));
       return;
     }
 

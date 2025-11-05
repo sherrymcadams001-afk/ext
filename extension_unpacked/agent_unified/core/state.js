@@ -181,23 +181,18 @@ export const createAgentState = ({ storageArea = "local", logger } = {}) => {
 
     try {
       const snapshot = clone(internalState);
-      const sendResult = chrome.runtime.sendMessage({
+      // Note: chrome.runtime.sendMessage returns undefined in MV3 when using callbacks
+      // We use fire-and-forget pattern here since state updates are not critical
+      chrome.runtime.sendMessage({
         type: "agent.stateUpdate",
         payload: {
           reason,
           snapshot,
         },
       });
-      
-      // Handle promise if sendMessage returns one
-      if (sendResult && typeof sendResult.catch === 'function') {
-        sendResult.catch(() => {
-          // Ignore broadcast errors (no listeners)
-        });
-      }
     } catch (error) {
       // Silently ignore broadcast errors in non-extension contexts
-      logger?.warn?.("Failed to broadcast state update", { error: error.message });
+      // This is expected when no listeners are registered
     }
   };
 

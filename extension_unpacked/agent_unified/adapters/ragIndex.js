@@ -90,6 +90,22 @@ function simpleEmbed(text) {
 }
 
 /**
+ * Generate UUID (fallback for environments without crypto.randomUUID)
+ */
+function generateUUID() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  
+  // Fallback UUID v4 implementation
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/**
  * RAG Index with persistence
  * @implements {IRAG}
  */
@@ -188,7 +204,7 @@ export class RAGIndex {
 
     const embedding = await this._getEmbedding(text);
     const doc = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       text,
       embedding,
       meta,

@@ -175,7 +175,13 @@ export class ToolRegistry {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
-        resolve(resp && resp.ok && resp.bridge);
+        
+        // Check for chrome.runtime.lastError
+        if (chrome.runtime?.lastError) {
+          resolve(false);
+        } else {
+          resolve(resp && resp.ok && resp.bridge);
+        }
       });
     });
     
@@ -184,7 +190,12 @@ export class ToolRegistry {
     // Execute tool via bridge
     return new Promise((resolve) => {
       chrome.tabs.sendMessage(tabId, { kind: 'toolExec', tool, args }, (resp) => {
-        resolve(resp);
+        // Check for chrome.runtime.lastError
+        if (chrome.runtime?.lastError) {
+          resolve(null);
+        } else {
+          resolve(resp);
+        }
       });
     });
   }
